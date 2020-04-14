@@ -18,8 +18,8 @@ def rsInit():
     config = rs.config()
     config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-    pipeline.start(config)
-    return pipeline
+    pipe_profile = pipeline.start(config)
+    return pipeline , pipe_profile 
 
 def select_ROI(color_image):
     cv2.namedWindow('select ROI', cv2.WINDOW_AUTOSIZE)
@@ -46,11 +46,23 @@ points = []
 def click(event,x,y,flages,param):
     global points
     if event == cv2.EVENT_LBUTTONDBLCLK:
-        print(points)
         if len(points) == 2:
-            dist = distance(points[0],points[1],x,y)
-            print(dist)
+            cmPerPx(param[0],x,y,points[0],points[1],param[1])
         points = [x,y]
 
-def distance(x1,y1,x2,y2):
-    return ((x1-x2) ** 2 + (y1- y2) ** 2) ** 0.5
+def distance(x1,y1,d1,x2,y2,d2):
+    return ((x1-x2) ** 2 + (y1- y2) ** 2+(d1-d2)**2) ** 0.5
+
+def cmPerPx(depth_frame,x1,y1,x2,y2,scale):
+    depth1 = depth_frame.get_distance(x1, y1)
+    depth2 = depth_frame.get_distance(x2, y2)
+    # fx,fy = rs.rs2_fov(depth_frame.profile.as_video_stream_profile().intrinsics)
+    # print(fx,fy)
+    # realWdith = (abs(x1-x2) ) * 2 * math.tan(math.radians(fx / 2)) * depth1 / depth_frame.width
+    # realHeight = (abs(y1-y2) )  * 2 * math.tan(math.radians(fy / 2)) * depth1 / depth_frame.width
+    # print(realWdith,realHeight,depth1 - depth2)
+    intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+    x = rs.rs2_deproject_pixel_to_point(intrin,[x1,y1],depth1)
+    y = rs.rs2_deproject_pixel_to_point(intrin,[x2,y2],depth2)
+    print(((x[0]-y[0])**2 +(x[1]-y[1])**2 +(x[2]-y[2])**2)**0.5 )
+    # return (realWdith ** 2 + realHeight ** 2 + (depth1 - depth2)**2)**(0.5)
