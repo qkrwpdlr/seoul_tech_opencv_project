@@ -1,6 +1,7 @@
 import pyrealsense2 as rs
 import numpy as np
 import cv2
+import math
 
 OPENCV_OBJECT_TRACKERS = {
     "csrt": cv2.TrackerCSRT_create,
@@ -40,3 +41,16 @@ def tracking(color_image,depth_frame,tracker):
     cv2.rectangle(color_image,(left,top),(right,bottom),(255,255,255),3)
     depth = depth_frame.get_distance(x_middle,y_middle)
     return color_image,depth
+
+points = []
+def click(event,x,y,flages,param):
+    global points
+    if event == cv2.EVENT_LBUTTONDBLCLK:
+        print(points)
+        if len(points) == 2:
+            dist = distance(points[0],points[1],x,y)
+            print(dist)
+        points = [x,y]
+
+def distance(x1,y1,x2,y2):
+    return ((x1-x2) ** 2 + (y1- y2) ** 2) ** 0.5

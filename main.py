@@ -1,8 +1,9 @@
 import pyrealsense2 as rs
 import numpy as np
 import cv2
-from core import rsInit,select_ROI,tracking
+from core import rsInit,select_ROI,tracking,click
 
+MAIN_SCREEN = "RealSense"
 pipeline = rsInit()
 isTracker = False
 
@@ -26,17 +27,14 @@ try:
             tracker = select_ROI(color_image)
             isTracker = True
         color_image,depth = tracking(color_image,depth_frame,tracker)
-        print(depth)
         cv2.putText(color_image ,"{}cm".format(depth*100), (0, 10),cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
         
 
-
-
-
         ##### LOGIC END
         # 화면에 보여주는 부분 START
-        cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-        cv2.imshow('RealSense', color_image)
+        cv2.namedWindow(MAIN_SCREEN, cv2.WINDOW_AUTOSIZE)
+        cv2.setMouseCallback(MAIN_SCREEN, click,param=depth)
+        cv2.imshow(MAIN_SCREEN, color_image)
         # 화면에 보여주는 부분 END
 
         # q 키 누르면 끄는 코드
