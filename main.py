@@ -19,19 +19,18 @@ try:
         color_image = np.asanyarray(color_frame.get_data())
         # 카메라 읽는 부분 END
         ##### LOGIC START
-        if isTracker == False:
-            tracker = select_ROI(color_image)
-            isTracker = True
-        color_image,depth = tracking(color_image,depth_frame,tracker)
+        # if isTracker == False:
+        #     tracker = select_ROI(color_image)
+        #     isTracker = True
+        # color_image,depth = tracking(color_image,depth_frame,tracker)
 
 
-        cv2.putText(color_image ,"{}cm".format(depth*100), (0, 10),cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
+        # cv2.putText(color_image ,"{}cm".format(depth*100), (0, 10),cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
         scale = pipe_profile.get_device().first_depth_sensor().get_depth_scale()
-
         ##### LOGIC END
         # 화면에 보여주는 부분 START
         cv2.namedWindow(MAIN_SCREEN, cv2.WINDOW_AUTOSIZE)
-        cv2.setMouseCallback(MAIN_SCREEN, click,param=[depth_frame,scale])
+        cv2.setMouseCallback(MAIN_SCREEN, click,param=[depth_frame,color_frame])
         cv2.imshow(MAIN_SCREEN, color_image)
         # 화면에 보여주는 부분 END
 

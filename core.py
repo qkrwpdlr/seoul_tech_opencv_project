@@ -42,16 +42,26 @@ def tracking(color_image,depth_frame,tracker):
     depth = depth_frame.get_distance(x_middle,y_middle)
     return color_image,depth
 
-points = []
-def click(event,x,y,flages,param):
-    global points
+point = []
+def click(event,x1,y1,flages,param):
+    global point
     if event == cv2.EVENT_LBUTTONDBLCLK:
-        if len(points) == 2:
-            cmPerPx(param[0],x,y,points[0],points[1],param[1])
-        points = [x,y]
+        depth_frame = param[0]
+        color_frame = param[1]
+        depth = depth_frame.get_distance(x1,y1)
+        print("depth : ",depth)
+        if len(point) == 2:
+            x2 = point[0]
+            y2 = point[1]
+            depth = depth_frame.get_distance((x1+x2)//2,(y1+y2)//2)
+            fx,fy = rs.rs2_fov(color_frame.profile.as_video_stream_profile().intrinsics)
+            realWdith = (abs(x1-x2) ) * 2 * math.tan(math.radians(fx / 2)) * depth / color_frame.width
+            realHeight = (abs(y1-y2) )  * 2 * math.tan(math.radians(fy / 2)) * depth / color_frame.width
+            print(realHeight,realWdith)
+        point = [x1,y1]
 
-def distance(x1,y1,d1,x2,y2,d2):
-    return ((x1-x2) ** 2 + (y1- y2) ** 2+(d1-d2)**2) ** 0.5
+def distance(x1,y1,x2,y2):
+    return ((x1-x2) ** 2 + (y1- y2) ** 2) ** 0.5
 
 def cmPerPx(depth_frame,x1,y1,x2,y2,scale):
     depth1 = depth_frame.get_distance(x1, y1)
@@ -64,5 +74,7 @@ def cmPerPx(depth_frame,x1,y1,x2,y2,scale):
     intrin = depth_frame.profile.as_video_stream_profile().intrinsics
     x = rs.rs2_deproject_pixel_to_point(intrin,[x1,y1],depth1)
     y = rs.rs2_deproject_pixel_to_point(intrin,[x2,y2],depth2)
+    print("depth1 : ",depth1)
+    print("depth1 : ",depth2)
     print(((x[0]-y[0])**2 +(x[1]-y[1])**2 +(x[2]-y[2])**2)**0.5 )
     # return (realWdith ** 2 + realHeight ** 2 + (depth1 - depth2)**2)**(0.5)
