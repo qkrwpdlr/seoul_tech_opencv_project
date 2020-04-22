@@ -3,6 +3,9 @@ import numpy as np
 import cv2
 import math
 
+depth_min = 0.11 #meter
+depth_max = 1.0 #meter
+
 OPENCV_OBJECT_TRACKERS = {
     "csrt": cv2.TrackerCSRT_create,
     "kcf": cv2.TrackerKCF_create,
@@ -40,16 +43,28 @@ def select_ROI2(color_image):
     tracker.init(color_image,rect)
     return tracker,rect
 
-def tracking(color_image,depth_frame,tracker):
+def tracking(color_image,depth_frame,tracker,depth_image,profile):
+    global depth_min,depth_max
     _, box = tracker.update(color_image)
     left,top,w,h = [int(v) for v in box]
     right = left + w
     bottom = top + h
     x_middle = (left + right) // 2
     y_middle = (top + bottom) // 2
+
+    depth_scale = profile.get_device().first_depth_sensor().get_depth_scale()
+    depth_intrin = profile.get_stream(rs.stream.depth).as_video_stream_profile().get_intrinsics()
+    color_intrin = profile.get_stream(rs.stream.color).as_video_stream_profile().get_intrinsics()
+    depth_to_color_extrin =  profile.get_stream(rs.stream.depth).as_video_stream_profile().get_extrinsics_to( profile.get_stream(rs.stream.color))
+    color_to_depth_extrin =  profile.get_stream(rs.stream.color).as_video_stream_profile().get_extrinsics_to( profile.get_stream(rs.stream.depth))
+    
+    depth_point = rs.rs2_project_color_pixel_to_depth_pixel(depth_frame.get_data(), depth_scale, depth_min, depth_max,
+                depth_intrin, color_intrin, depth_to_color_extrin, color_to_depth_extrin, [x_middle,y_middle])
+
     cv2.rectangle(color_image,(left,top),(right,bottom),(255,255,255),3)
-    depth = depth_frame.get_distance(x_middle,y_middle)
-    return color_image,depth,box
+    cv2.rectangle(depth_image,(left,top),(right,bottom),(255,255,255),3)
+    depth = depth_frame.get_distance(int(depth_point[0]),int(depth_point[1]))
+    return color_image,depth,box,depth_image
 
 point = []
 def click(event,x1,y1,flages,param):
