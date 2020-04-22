@@ -27,9 +27,18 @@ def select_ROI(color_image):
     cv2.putText(color_image ,"select ROI", (0, 10),cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
     rect = cv2.selectROI("select ROI",color_image)
     cv2.destroyWindow("select ROI")
-    tracker = OPENCV_OBJECT_TRACKERS['mil']()
+    tracker = OPENCV_OBJECT_TRACKERS['csrt']()
     tracker.init(color_image,rect)
-    return tracker
+    return tracker,rect
+def select_ROI2(color_image):
+    cv2.namedWindow('select ROI', cv2.WINDOW_AUTOSIZE)
+    cv2.imshow('select ROI', color_image)
+    cv2.putText(color_image ,"select ROI", (0, 10),cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
+    rect = cv2.selectROI("select ROI",color_image)
+    cv2.destroyWindow("select ROI")
+    tracker = OPENCV_OBJECT_TRACKERS['csrt']()
+    tracker.init(color_image,rect)
+    return tracker,rect
 
 def tracking(color_image,depth_frame,tracker):
     _, box = tracker.update(color_image)
@@ -40,7 +49,7 @@ def tracking(color_image,depth_frame,tracker):
     y_middle = (top + bottom) // 2
     cv2.rectangle(color_image,(left,top),(right,bottom),(255,255,255),3)
     depth = depth_frame.get_distance(x_middle,y_middle)
-    return color_image,depth
+    return color_image,depth,box
 
 point = []
 def click(event,x1,y1,flages,param):
@@ -48,8 +57,10 @@ def click(event,x1,y1,flages,param):
     if event == cv2.EVENT_LBUTTONDBLCLK:
         depth_frame = param[0]
         color_frame = param[1]
+        color_image = param[2]
         depth = depth_frame.get_distance(x1,y1)
         print("depth : ",depth)
+        cv2.circle(color_image,(x1,y1), 100,(255,0,0),-1)
         if len(point) == 2:
             x2 = point[0]
             y2 = point[1]
