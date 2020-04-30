@@ -73,8 +73,9 @@ class CV:
         self.origin_rect = (int(left),int(top),int(w),int(h))
         cv2.destroyWindow(screen_name)
         cv2.destroyWindow(size_screen_name)
-        self.tracker = OPENCV_OBJECT_TRACKERS['csrt']()
-        self.tracker.init(self.color_image,self.origin_rect)
+        tracker = OPENCV_OBJECT_TRACKERS['csrt']()
+        tracker.init(self.color_image,self.origin_rect)
+        return tracker,self.origin_rect
 
     def _color_px_to_depth_px(self,x,y):
         depth_scale = self.pipe_profile.get_device().first_depth_sensor().get_depth_scale()
@@ -85,8 +86,8 @@ class CV:
         depth_point = rs.rs2_project_color_pixel_to_depth_pixel(self.depth_frame.get_data(), depth_scale, depth_min, depth_max, depth_intrin, color_intrin, depth_to_color_extrin, color_to_depth_extrin, [x,y])
         return depth_point
 
-    def tracking(self):
-        _, box = self.tracker.update(self.color_image)
+    def tracking(self,tracker):
+        _, box = tracker.update(self.color_image)
         left,top,w,h = [int(v) for v in box]
         right = left + w
         bottom = top + h
