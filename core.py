@@ -39,7 +39,7 @@ def select_ROI2(color_image):
     cv2.putText(color_image ,"select ROI", (0, 10),cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
     rect = cv2.selectROI("select ROI",color_image)
     cv2.destroyWindow("select ROI")
-    tracker = OPENCV_OBJECT_TRACKERS['csrt']()
+    tracker = OPENCV_OBJECT_TRACKERS['mil']()
     tracker.init(color_image,rect)
     return tracker,rect
 

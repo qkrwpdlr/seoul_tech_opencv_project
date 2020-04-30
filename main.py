@@ -4,12 +4,14 @@ import cv2
 from core import rsInit,select_ROI,tracking,click,select_ROI2
 import math
 import matplotlib.pyplot as plt
+import time
 MAIN_SCREEN = "RealSense"
 pipeline,pipe_profile  = rsInit()
 isTracker = False
 origin_point = []
 count = 0
 datas = []
+prevTime = 0
 
 try:
     while True:
@@ -29,7 +31,7 @@ try:
             isTracker = True
             origin_point = rect
 
-        color_image,depth,box,depth_image = tracking(color_image,depth_frame,tracker,depth_image,pipe_profile,color_frame)
+        color_image,depth,box,depth_image = tracking(color_image,depth_frame,tracker,depth_image,pipe_profile)
 
         ## origin 으로 부터의 거리
         a = origin_point[0]
@@ -44,6 +46,12 @@ try:
         datas.append(realWdith*10)
         ## origin 까지의 거리 표시
 
+        curTime = time.time()
+        sec = curTime - prevTime
+        prevTime = curTime
+        fps = 1/ sec
+
+        cv2.putText(color_image ,"fps : {}".format(fps), (0, 100),cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
 
         scale = pipe_profile.get_device().first_depth_sensor().get_depth_scale()
         ##### LOGIC END
