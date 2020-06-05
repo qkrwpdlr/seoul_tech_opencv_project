@@ -11,7 +11,7 @@ OPENCV_OBJECT_TRACKERS = {
 }
 
 def cv_init(cap):
-    frame_count = 100
+    frame_count = 1
     ret, img = cap.read()
     rect = cv2.selectROI("select ROI",img)
     tracker = OPENCV_OBJECT_TRACKERS['csrt']()
@@ -27,5 +27,5 @@ def cv_init(cap):
         y_middle = (top + bottom) // 2
         x += x_middle
         y += y_middle 
-    print("init")
     return tracker,x//frame_count,y//frame_count
+
